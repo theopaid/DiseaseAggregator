@@ -1,6 +1,14 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <dirent.h>
+
 #include "../include/Interface.h"
 
-bool validArgs(int argc, char *argv[])
+bool validArgs(int argc,const char *argv[])
 {
 
     if (argc == 7)
@@ -13,7 +21,7 @@ bool validArgs(int argc, char *argv[])
     }
 }
 
-void getArgs(int *numWorkers, int *bufferSize, char **input_dir, char *argv[]) {
+void getArgs(int *numWorkers, int *bufferSize, char **input_dir,const char *argv[]) {
 
     for (int i = 1; i < 7; i = i + 2)
     {
@@ -30,4 +38,56 @@ void getArgs(int *numWorkers, int *bufferSize, char **input_dir, char *argv[]) {
             *numWorkers = atoi(argv[i + 1]);
         }
     }
+}
+
+dirListNode *dirListingToList(char *inputDir)
+{
+
+    DIR *dp;
+    struct dirent *ep;
+    dp = opendir(inputDir);
+
+    dirListNode *head = NULL, *current = NULL;
+    if (dp != NULL)
+    {
+        while ((ep = readdir(dp)) != NULL)
+        {
+            if ((strcmp(ep->d_name, ".") == 0 || strcmp(ep->d_name, "..") == 0 || (*ep->d_name) == '.'))
+            {
+            }
+            else
+            {
+                if (head==NULL) {
+                    head = (dirListNode *) malloc(sizeof(dirListNode));
+                    head->dirName = malloc(sizeof(char) * (strlen(ep->d_name) + 1));
+                    strcpy(head->dirName, ep->d_name);
+                    head->next = NULL;
+                    current = head;
+                } else {
+                    current->next = (dirListNode *)malloc(sizeof(dirListNode));
+                    current = current->next;
+                    current->dirName = malloc(sizeof(char) * (strlen(ep->d_name) + 1));
+                    strcpy(current->dirName, ep->d_name);
+                    current->next = NULL;
+                }
+            }
+        }
+
+        (void)closedir(dp);
+    }
+    else
+        perror("Couldn't open the directory");
+
+    return head;
+}
+
+int listNodeCounter(dirListNode *head) {
+
+    int count = 0;
+    while(head != NULL) {
+        count++;
+        head = head->next;
+    }
+
+    return count;
 }
