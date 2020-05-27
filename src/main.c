@@ -8,7 +8,8 @@
 
 #include "../include/Interface.h"
 
-int main(int argc, const char* argv[]) {
+int main(int argc, const char *argv[])
+{
 
     // dirListNode *headDirList = dirListingToList("input_dir");
 
@@ -18,13 +19,31 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    int numWorkers, bufferSize;
+    int numOfWorkers, bufferSize;
     char *input_dir;
-    getArgs(&numWorkers, &bufferSize, &input_dir, argv);
+    getArgs(&numOfWorkers, &bufferSize, &input_dir, argv);
 
-    pid_t *workersInf = distributeToWorkers(numWorkers, bufferSize, input_dir);
+    workersInfo myWorkersInfo;
+    allocateWorkersInfo(&myWorkersInfo, numOfWorkers);
 
-    renderMenu(workersInf, numWorkers);
+    distributeToWorkers(&myWorkersInfo, numOfWorkers, bufferSize, input_dir);
+
+    dirListNode *headDirList = dirListingToList(input_dir);
+    int numOfDirs = listNodeCounter(headDirList);
+    int divRes = numOfDirs / numOfWorkers;
+    int modRes = numOfDirs % numOfWorkers;
+
+    dirListNode *current = headDirList;
+    for (i = 1; i <= numOfWorkers; i++)
+    {
+        dirsForWorker = divRes;
+        if (modRes - i >= 0)
+            dirsForWorker++;
+
+            
+    }
+
+    renderMenu(&myWorkersInfo, numOfWorkers);
 
     return 0;
-}
+    }

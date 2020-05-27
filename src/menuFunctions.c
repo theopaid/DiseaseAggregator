@@ -4,7 +4,7 @@
 
 #include "../include/Interface.h"
 
-void renderMenu(pid_t *workersInf, int numOfWorkers)
+void renderMenu(workersInfo *myWorkersInfo, int numOfWorkers)
 {
 
     char line[LINE_MAX];
@@ -67,7 +67,7 @@ void renderMenu(pid_t *workersInf, int numOfWorkers)
                 }
                 else
                 {
-                   // topDiseases(arguments, diseaseHTable, head, headOfUniqueDiseases);
+                    // topDiseases(arguments, diseaseHTable, head, headOfUniqueDiseases);
                 }
             }
             else if (strcmp(command, "/topk-Countries") == 0)
@@ -91,7 +91,7 @@ void renderMenu(pid_t *workersInf, int numOfWorkers)
                 }
                 else
                 {
-                  //  insertPatientRecord(arguments, diseaseHTable, countryHTable, head, headOfUniqueCountries, headOfUniqueDiseases);
+                    //  insertPatientRecord(arguments, diseaseHTable, countryHTable, head, headOfUniqueCountries, headOfUniqueDiseases);
                 }
             }
             else if (strcmp(command, "/recordPatientExit") == 0)
@@ -103,12 +103,12 @@ void renderMenu(pid_t *workersInf, int numOfWorkers)
                 }
                 else
                 {
-                  //  recordPatientExit(arguments, head);
+                    //  recordPatientExit(arguments, head);
                 }
             }
             else if (strcmp(command, "/man") == 0)
             {
-               // printManual();
+                // printManual();
             }
             else if (strcmp(command, "/exit") == 0)
             {

@@ -8,7 +8,7 @@
 
 #include "../include/Interface.h"
 
-bool validArgs(int argc,const char *argv[])
+bool validArgs(int argc, const char *argv[])
 {
 
     if (argc == 7)
@@ -21,7 +21,8 @@ bool validArgs(int argc,const char *argv[])
     }
 }
 
-void getArgs(int *numWorkers, int *bufferSize, char **input_dir,const char *argv[]) {
+void getArgs(int *numWorkers, int *bufferSize, char **input_dir, const char *argv[])
+{
 
     for (int i = 1; i < 7; i = i + 2)
     {
@@ -57,13 +58,16 @@ dirListNode *dirListingToList(char *inputDir)
             }
             else
             {
-                if (head==NULL) {
-                    head = (dirListNode *) malloc(sizeof(dirListNode));
+                if (head == NULL)
+                {
+                    head = (dirListNode *)malloc(sizeof(dirListNode));
                     head->dirName = malloc(sizeof(char) * (strlen(ep->d_name) + 1));
                     strcpy(head->dirName, ep->d_name);
                     head->next = NULL;
                     current = head;
-                } else {
+                }
+                else
+                {
                     current->next = (dirListNode *)malloc(sizeof(dirListNode));
                     current = current->next;
                     current->dirName = malloc(sizeof(char) * (strlen(ep->d_name) + 1));
@@ -81,13 +85,29 @@ dirListNode *dirListingToList(char *inputDir)
     return head;
 }
 
-int listNodeCounter(dirListNode *head) {
+int listNodeCounter(dirListNode *head)
+{
 
     int count = 0;
-    while(head != NULL) {
+    while (head != NULL)
+    {
         count++;
         head = head->next;
     }
 
     return count;
+}
+
+void allocateWorkersInfo(workersInfo *myWorkersInfo, int numOfWorkers)
+{
+
+    myWorkersInfo->workerPIDs = (pid_t *)malloc(numOfWorkers * sizeof(pid_t));
+
+    myWorkersInfo->workerFDs = (int **)malloc(numOfWorkers * sizeof(int *));
+    for (int i = 0; i < numOfWorkers; i++)
+        myWorkersInfo->workerFDs[i] = (int *)malloc(2 * sizeof(int));
+
+    myWorkersInfo->workerPATHs = (char ***)malloc(numOfWorkers * sizeof(char **));
+    for (int k = 0; k < numOfWorkers; k++)
+        myWorkersInfo->workerPATHs[k] = (char **)malloc(2 * sizeof(char *));
 }

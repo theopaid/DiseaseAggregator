@@ -10,17 +10,15 @@
 
 #include "../include/Interface.h"
 
-pid_t *distributeToWorkers(int numOfWorkers, int bufferSize, char *input_dir)
+void distributeToWorkers(workersInfo *myWorkersInfo, int numOfWorkers, int bufferSize, char *input_dir)
 {
 
     pid_t childpid;
-    pid_t *workersInf = (pid_t*) malloc(numOfWorkers*sizeof(pid_t));
 
     dirListNode *headDirList = dirListingToList(input_dir);
     int numOfDirs = listNodeCounter(headDirList);
-    int divRes = numOfDirs/numOfWorkers;
-    int modRes = numOfDirs%numOfWorkers;
-    int storedFDs[numOfWorkers][2];
+    int divRes = numOfDirs / numOfWorkers;
+    int modRes = numOfDirs % numOfWorkers;
 
     int i, dirsForWorker;
     dirListNode *current = headDirList;
@@ -30,47 +28,62 @@ pid_t *distributeToWorkers(int numOfWorkers, int bufferSize, char *input_dir)
         if (modRes - i >= 0)
             dirsForWorker++;
 
-        char fifoToWorker[100], fifoFromWorker[100];
+        char fifoToWorker[20], fifoFromWorker[20];
         sprintf(fifoToWorker, "/tmp/Worker%dIn", i);
         sprintf(fifoFromWorker, "/tmp/Worker%dOut", i);
-        mkfifo(fifoToWorker, 0666);
-        mkfifo(fifoFromWorker, 0666);
+        if (mkfifo(fifoToWorker, 0666) == -1)
+            perror("mkfifo1");
+        if (mkfifo(fifoFromWorker, 0666) == -1)
+            perror("mkfifo2");
+
+        myWorkersInfo->workerPATHs[i - 1][0] = (char *)malloc(sizeof(char) * (strlen(fifoToWorker) + 1));
+        myWorkersInfo->workerPATHs[i - 1][1] = (char *)malloc(sizeof(char) * (strlen(fifoFromWorker) + 1));
+
+        strcpy(myWorkersInfo->workerPATHs[i - 1][0], fifoToWorker);
+        strcpy(myWorkersInfo->workerPATHs[i - 1][1], fifoFromWorker);
 
         if ((childpid = fork()) <= 0)
         {
-            workersInf[i-1] = childpid;
+
             if (childpid == -1)
             {
                 perror("failed to fork");
-                break;
+                exit(-1);
             }
-            int fdWrite = open(fifoFromWorker, O_WRONLY);
-            int fdRead = open(fifoToWorker, O_RDONLY);
+            int fdRead = open(fifoToWorker, O_RDWR | O_NONBLOCK);
+            int fdWrite = open(fifoFromWorker, O_RDWR | O_NONBLOCK);
 
             // const char *dirNames[dirsForWorker];
             // for (int j = 0; j < dirsForWorker; j++) {
             //     dirNames[j] = current->dirName;
             //     current = current->next;
             // }
+            char arr[20];
+            read(fdRead, arr, sizeof(arr));
+            puts(arr);
             //workerExec();
             //handleWorkerExit();
-            break;
+            exit(-1);
         }
         else
         {
-            storedFDs[i-1][1] = open(fifoToWorker, O_WRONLY); //write
-            storedFDs[i-1][2] = open(fifoFromWorker, O_RDONLY); //read
+            myWorkersInfo->workerPIDs[i - 1] = childpid;
+            puts("aggregator\n");
+            myWorkersInfo->workerFDs[i - 1][0] = open(fifoToWorker, O_RDWR | O_NONBLOCK); //write
+            // if (storedFDs[i - 1][1] == -1) {
+            //     perror("poutsa");
+            // }
+            myWorkersInfo->workerFDs[i - 1][1] = open(fifoFromWorker, O_RDWR | O_NONBLOCK); //read
+            printf("fd: %d\n", myWorkersInfo->workerFDs[i - 1][1]);
+            write(myWorkersInfo->workerFDs[i - 1][0], "kalispera", 10);
             // for (int j = 0; j < dirsForWorker; j++) {
             //     current = current->next;
             // }
             continue;
         }
     }
-
-    return workersInf;
 }
 
-void workerExec() {
-
-
+void workerExec()
+{
 }
