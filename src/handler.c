@@ -58,9 +58,8 @@ void distributeToWorkers(workersInfo *myWorkersInfo, int numOfWorkers, int buffe
             //     dirNames[j] = current->dirName;
             //     current = current->next;
             // }
-            char arr[20];
-            read(fdRead, arr, sizeof(arr));
-            puts(arr);
+            dirListNode *current;
+            while(read(fdRead, current, bufferSize) == -1) {}
             //workerExec();
             //handleWorkerExit();
             exit(-1);
@@ -75,7 +74,7 @@ void distributeToWorkers(workersInfo *myWorkersInfo, int numOfWorkers, int buffe
             // }
             myWorkersInfo->workerFDs[i - 1][1] = open(fifoFromWorker, O_RDWR | O_NONBLOCK); //read
             printf("fd: %d\n", myWorkersInfo->workerFDs[i - 1][1]);
-            write(myWorkersInfo->workerFDs[i - 1][0], "kalispera", 10);
+            //write(myWorkersInfo->workerFDs[i - 1][0], "kalispera", 10);
             // for (int j = 0; j < dirsForWorker; j++) {
             //     current = current->next;
             // }

@@ -34,14 +34,19 @@ int main(int argc, const char *argv[])
     int modRes = numOfDirs % numOfWorkers;
 
     dirListNode *current = headDirList;
-    for (i = 1; i <= numOfWorkers; i++)
+    int dirsForWorker;
+    for (int i = 1; i <= numOfWorkers; i++)
     {
+        write(myWorkersInfo.workerFDs[i - 1][0], current, bufferSize);
         dirsForWorker = divRes;
         if (modRes - i >= 0)
             dirsForWorker++;
-
-            
-    }
+        for (int j = 0; j < dirsForWorker; j++)
+        {
+                dirNames[j] = current->dirName;
+                current = current->next;
+            }
+        }
 
     renderMenu(&myWorkersInfo, numOfWorkers);
 
