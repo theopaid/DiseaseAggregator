@@ -34,21 +34,30 @@ int main(int argc, const char *argv[])
     int modRes = numOfDirs % numOfWorkers;
 
     dirListNode *current = headDirList;
-    int dirsForWorker;
+    int dirsForWorker, bytesToWrite = 0;
     for (int i = 1; i <= numOfWorkers; i++)
     {
-        write(myWorkersInfo.workerFDs[i - 1][0], current, bufferSize);
         dirsForWorker = divRes;
         if (modRes - i >= 0)
             dirsForWorker++;
+        write(myWorkersInfo.workerFDs[i - 1][0], &dirsForWorker, sizeof(int));
         for (int j = 0; j < dirsForWorker; j++)
         {
-                dirNames[j] = current->dirName;
-                current = current->next;
-            }
+            bytesToWrite = strlen(current->dirName) + 1;
+            write(myWorkersInfo.workerFDs[i - 1][0], &bytesToWrite, sizeof(int));
+            write(myWorkersInfo.workerFDs[i - 1][0], current->dirName, bytesToWrite);
+            current = current->next;
         }
+
+    }
+    int infoRead;
+    for (int i = 1; i <= numOfWorkers; i++) {
+        infoRead = 0;
+        while(!infoRead)
+            while(read(myWorkersInfo.workerFDs[i - 1][1], &infoRead, sizeof(int)) == -1);
+    }
 
     renderMenu(&myWorkersInfo, numOfWorkers);
 
     return 0;
-    }
+}

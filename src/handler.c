@@ -53,36 +53,48 @@ void distributeToWorkers(workersInfo *myWorkersInfo, int numOfWorkers, int buffe
             int fdRead = open(fifoToWorker, O_RDWR | O_NONBLOCK);
             int fdWrite = open(fifoFromWorker, O_RDWR | O_NONBLOCK);
 
-            // const char *dirNames[dirsForWorker];
-            // for (int j = 0; j < dirsForWorker; j++) {
-            //     dirNames[j] = current->dirName;
-            //     current = current->next;
-            // }
-            dirListNode *current;
-            while(read(fdRead, current, bufferSize) == -1) {}
-            //workerExec();
+            int numOfDirs = 0, bytesToRead, n;
+            char *dirName;
+
+            while(read(fdRead, &numOfDirs, sizeof(int)) == -1) {}
+            n = numOfDirs;
+            char *dirNames[numOfDirs];
+            while(n--) {
+                bytesToRead = 0;
+                while(read(fdRead, &bytesToRead, sizeof(int)) == -1) {}
+                dirName = (char *) malloc(sizeof(char) * bytesToRead);
+                while(read(fdRead, dirName, bytesToRead) == -1) {}
+                dirNames[numOfDirs-n-1] = dirName;
+            }
+
+            workerExec(input_dir, numOfDirs, dirNames, fdWrite, fdRead);
             //handleWorkerExit();
             exit(-1);
         }
         else
         {
             myWorkersInfo->workerPIDs[i - 1] = childpid;
-            puts("aggregator\n");
+
             myWorkersInfo->workerFDs[i - 1][0] = open(fifoToWorker, O_RDWR | O_NONBLOCK); //write
-            // if (storedFDs[i - 1][1] == -1) {
-            //     perror("poutsa");
-            // }
+            if (myWorkersInfo->workerFDs[i - 1][0] == -1) {
+                perror("Error on opening");
+                exit(-1);
+             }
             myWorkersInfo->workerFDs[i - 1][1] = open(fifoFromWorker, O_RDWR | O_NONBLOCK); //read
-            printf("fd: %d\n", myWorkersInfo->workerFDs[i - 1][1]);
-            //write(myWorkersInfo->workerFDs[i - 1][0], "kalispera", 10);
-            // for (int j = 0; j < dirsForWorker; j++) {
-            //     current = current->next;
-            // }
+            if (myWorkersInfo->workerFDs[i - 1][1] == -1) {
+                perror("Error on opening");
+                exit(-1);
+            }
+
             continue;
         }
     }
 }
 
-void workerExec()
-{
+void workerExec(char *input_dir, int numOfDirs, char **dirNames, int fdWrite, int fdRead) {
+
+    puts(dirNames[0]);
+    //read directories
+    int done = 1;
+    write(fdWrite, &done, sizeof(int));
 }

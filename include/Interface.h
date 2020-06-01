@@ -30,3 +30,5 @@ dirListNode *dirListingToList(char *inputDir);
 int listNodeCounter(dirListNode *head);
 
 void allocateWorkersInfo(workersInfo *myWorkersInfo, int numOfWorkers);
+
+void workerExec(char *input_dir, int numOfDirs, char **dirNames, int fdWrite, int fdRead);
