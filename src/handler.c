@@ -93,8 +93,73 @@ void distributeToWorkers(workersInfo *myWorkersInfo, int numOfWorkers, int buffe
 
 void workerExec(char *input_dir, int numOfDirs, char **dirNames, int fdWrite, int fdRead) {
 
-    puts(dirNames[0]);
     //read directories
+    char *inputPath = NULL, *fullPath = NULL;
+    dirListNode *headList, *current;
+    listNode *recordsListHead = NULL, *tmp = NULL;
+    for(int i=0; i<numOfDirs; i++) {
+        inputPath = (char *)malloc(sizeof(char) * (strlen(input_dir) + strlen(dirNames[i]) + 2));
+        sprintf(inputPath, "%s/%s", input_dir, dirNames[i]);
+
+        headList = dirListingToList(inputPath);
+        current = headList;
+
+        while(current != NULL) {
+            fullPath = (char *)malloc(sizeof(char) * (strlen(inputPath) + 16)); // 15 is the static size of a Date
+            sprintf(fullPath, "%s/%s", inputPath, current->dirName);
+            printf("Reading data of %s\n", fullPath);
+            //make all the structures
+            //when done, get the data and send them sendStatistics()
+            recordsListHead = storeData(fullPath, &recordsListHead, current->dirName, dirNames[i]);
+            
+
+
+            free(fullPath);
+            fullPath = NULL;
+            current = current->next;
+        }
+
+        free(inputPath);
+        freeDirList(headList);
+        inputPath = NULL;
+    }
+    //printList(recordsListHead);
+
+    // let's create the hash tables
+    hashTable diseaseHTable;
+    int diseaseHashTableNumOfEntries = 7;
+    bucket **diseaseHashTable = hashTableInit(diseaseHashTableNumOfEntries);
+    diseaseHTable.bucketPtrs = diseaseHashTable;
+    diseaseHTable.counter = diseaseHashTableNumOfEntries;
+    int bucketSize = 40;
+    diseaseHTable.bucketSize = bucketSize;
+
+    hashTable countryHTable;
+    int countryHashTableNumOfEntries = 7;
+    bucket **countryHashTable = hashTableInit(countryHashTableNumOfEntries);
+    countryHTable.bucketPtrs = countryHashTable;
+    countryHTable.counter = countryHashTableNumOfEntries;
+    countryHTable.bucketSize = bucketSize;
+
+    listNode *currentRecordsList = recordsListHead;
+    while (currentRecordsList != NULL)
+    {
+        hashTableInsert(&diseaseHTable, currentRecordsList->record->diseaseID, currentRecordsList);
+        hashTableInsert(&countryHTable, currentRecordsList->record->country, currentRecordsList);
+        currentRecordsList = currentRecordsList->next;
+    }
+
+    freeList(recordsListHead);
+    freeHTable(&diseaseHTable);
+    freeHTable(&countryHTable);
+
     int done = 1;
     write(fdWrite, &done, sizeof(int));
+}
+
+void sendStatistics(listNode *head, int fdWrite, int numOfDirs, char **dirNames) {
+
+    int casesForAge[4];
+
+
 }

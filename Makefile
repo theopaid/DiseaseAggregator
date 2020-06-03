@@ -1,21 +1,20 @@
-objects = src/main.o src/helpfulFunctions.o src/menuFunctions.o src/handler.o
+objects = src/main.o src/helpfulFunctions.o src/menuFunctions.o src/handler.o src/recordList.o src/hashTable.o src/avlTree.o src/freeFunct.o
 
 diseaseAggregator : $(objects)
 		cc -o diseaseAggregator $(objects)
 		@echo "========================================================================"
-		@echo "|Try running: ./diseaseAggregator -w 70 -b 10 -i 10                    |"
-		@echo "|Validation: ./validator.sh bin/small.txt 10 10 70                     |"
+		@echo "|Try running: ./diseaseAggregator  -w 3 -b 250 -i input_dir            |"
+		@echo "|														              |"
 		@echo "========================================================================"
 
 src/main.o : include/Interface.h
 src/helpfulFunctions.o : include/Interface.h
 src/menuFunctions.o : include/Interface.h
 src/handler.o : include/Interface.h
-# src/recordList.o : include/Interface.h
-# src/hashTable.o : include/Interface.h
-# src/avlTree.o : include/Interface.h
-# src/freeFunct.o : include/Interface.h
-# src/uniqueList.o : include/Interface.h
+src/recordList.o : include/Interface.h
+src/hashTable.o : include/Interface.h
+src/avlTree.o : include/Interface.h
+src/freeFunct.o : include/Interface.h
 
 .PHONY: clean
 clean :

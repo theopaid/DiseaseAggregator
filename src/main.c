@@ -51,6 +51,8 @@ int main(int argc, const char *argv[])
 
     }
     int infoRead;
+
+    // Waiting for the processes to read their directories.
     for (int i = 1; i <= numOfWorkers; i++) {
         infoRead = 0;
         while(!infoRead)

@@ -48,7 +48,7 @@ dirListNode *dirListingToList(char *inputDir)
     struct dirent *ep;
     dp = opendir(inputDir);
 
-    dirListNode *head = NULL, *current = NULL;
+    dirListNode *head = NULL, *current = NULL, *newNode = NULL, *previousNode = NULL;
     if (dp != NULL)
     {
         while ((ep = readdir(dp)) != NULL)
@@ -68,11 +68,31 @@ dirListNode *dirListingToList(char *inputDir)
                 }
                 else
                 {
-                    current->next = (dirListNode *)malloc(sizeof(dirListNode));
-                    current = current->next;
-                    current->dirName = malloc(sizeof(char) * (strlen(ep->d_name) + 1));
-                    strcpy(current->dirName, ep->d_name);
-                    current->next = NULL;
+                    newNode = (dirListNode *)malloc(sizeof(dirListNode));
+                    newNode->dirName = malloc(sizeof(char) * (strlen(ep->d_name) + 1));
+                    strcpy(newNode->dirName, ep->d_name);
+                    newNode->next = NULL;
+
+                    current = head;
+                    previousNode = NULL;
+                    while(1) {
+                        if(strcmp(ep->d_name, current->dirName) == -1) {
+                            if(!strcmp(head->dirName, current->dirName)) { // if we replace the head
+                                newNode->next = current;
+                                head = newNode;
+                            } else {
+                                newNode->next = current;
+                                previousNode->next = newNode;
+                            }
+                            break;
+                        }
+                        if(current->next == NULL) { // reached last node, let's insert here
+                            current->next = newNode;
+                            break;
+                        }
+                        previousNode = current;
+                        current = current->next;
+                    }
                 }
             }
         }
@@ -98,7 +118,18 @@ int listNodeCounter(dirListNode *head)
     return count;
 }
 
-void allocateWorkersInfo(workersInfo *myWorkersInfo, int numOfWorkers)
+void freeDirList(dirListNode *head) {
+
+    dirListNode *tmp;
+    while(head != NULL) {
+        tmp = head;
+        head = head->next;
+        free(tmp->dirName);
+        free(tmp);
+    }
+}
+
+    void allocateWorkersInfo(workersInfo *myWorkersInfo, int numOfWorkers)
 {
 
     myWorkersInfo->workerPIDs = (pid_t *)malloc(numOfWorkers * sizeof(pid_t));
@@ -110,4 +141,88 @@ void allocateWorkersInfo(workersInfo *myWorkersInfo, int numOfWorkers)
     myWorkersInfo->workerPATHs = (char ***)malloc(numOfWorkers * sizeof(char **));
     for (int k = 0; k < numOfWorkers; k++)
         myWorkersInfo->workerPATHs[k] = (char **)malloc(2 * sizeof(char *));
+}
+
+int compareDates(listNode *current, patientRecord *record)
+{                      // 0:for same dates
+                       // 1:if new Date is older than list node's one
+    int sameDates = 0; // 2:if new Date is newer than listNode's one
+
+    if (record->entryDate.year < current->record->entryDate.year)
+    {
+        return 1;
+    }
+    else if (record->entryDate.year > current->record->entryDate.year)
+    {
+        return 2;
+    }
+
+    if (record->entryDate.month < current->record->entryDate.month)
+    {
+        return 1;
+    }
+    else if (record->entryDate.month > current->record->entryDate.month)
+    {
+        return 2;
+    }
+
+    if (record->entryDate.day < current->record->entryDate.day)
+    {
+        return 1;
+    }
+    else if (record->entryDate.day > current->record->entryDate.day)
+    {
+        return 2;
+    }
+
+    return sameDates;
+}
+
+int compareStructDates(Date date1, Date date2)
+{                      // -1: date1 < date2
+                       // 0: date1 = date2
+    int sameDates = 0; // 1: date1 > date2
+
+    if (date1.year < date2.year)
+    {
+        return -1;
+    }
+    else if (date1.year > date2.year)
+    {
+        return 1;
+    }
+
+    if (date1.month < date2.month)
+    {
+        return -1;
+    }
+    else if (date1.month > date2.month)
+    {
+        return 1;
+    }
+
+    if (date1.day < date2.day)
+    {
+        return -1;
+    }
+    else if (date1.day > date2.day)
+    {
+        return 1;
+    }
+
+    return sameDates;
+}
+
+int hashFunction(char *keyName, int hashTableSize)
+{
+
+    int hashVal = 0;
+    int len = strlen(keyName);
+
+    for (int i = 0; i < len; i++)
+    {
+        hashVal += keyName[i];
+    }
+
+    return hashVal % hashTableSize;
 }

@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <dirent.h>
 
 #include "../include/Interface.h"
 
@@ -112,6 +116,15 @@ void renderMenu(workersInfo *myWorkersInfo, int numOfWorkers)
             }
             else if (strcmp(command, "/exit") == 0)
             {
+                for(int i=0; i<numOfWorkers; i++) {
+                    close(myWorkersInfo->workerFDs[i][0]); // close write
+                    close(myWorkersInfo->workerFDs[i][1]); // close read
+
+                    unlink(myWorkersInfo->workerPATHs[i][0]);
+                    unlink(myWorkersInfo->workerPATHs[i][1]);
+
+                    kill(myWorkersInfo->workerPIDs[i], SIGKILL);
+                }
                 printf("\nExiting the application. Goodbye and stay safe..\n");
                 return;
             }
